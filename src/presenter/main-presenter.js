@@ -4,6 +4,7 @@ import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
 import EventView from '../view/event-view.js';
 import EditEventView from '../view/edit-event-view.js';
+import NoPointsView from '../view/no-points-view.js';
 
 import PointsModel from '../model/points-model.js';
 
@@ -23,8 +24,33 @@ export default class MainPresenter {
     const destinations = this.pointsModel.getDestinations();
     const offers = this.pointsModel.getOffers();
 
-    render(new FilterView(), filterContainer);
+    const now = new Date();
+
+    const filters = {
+      everything: {
+        isChecked: true
+      },
+      future: {
+        isDisabled: !points.some((p) => new Date(p.dateFrom) > now)
+      },
+      present: {
+        isDisabled: !points.some((p) =>
+          new Date(p.dateFrom) <= now &&
+          new Date(p.dateTo) >= now
+        )
+      },
+      past: {
+        isDisabled: !points.some((p) => new Date(p.dateTo) < now)
+      }
+    };
+
+    render(new FilterView(filters), filterContainer);
     render(new SortView(), eventsContainer, RenderPosition.AFTERBEGIN);
+
+    if (points.length === 0) {
+      render(new NoPointsView(), eventsContainer);
+      return;
+    }
 
     points.forEach((point) => {
       const destination = destinations.find((d) => d.id === point.destination);
