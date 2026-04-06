@@ -2,6 +2,11 @@ import AbstractView from '../framework/view/abstract-view.js';
 
 export default class FilterView extends AbstractView {
 
+  constructor(filters) {
+    super();
+    this.filters = filters;
+  }
+
   get template() {
     return `
       <form class="trip-filters" action="#" method="get">
