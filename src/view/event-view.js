@@ -1,9 +1,10 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {formatDate, formatTime, formatDuration} from '../utils/format.js';
 
-export default class EventView {
+export default class EventView extends AbstractView {
 
   constructor(point, destination, offers) {
+    super();
     this.point = point;
     this.destination = destination;
     this.offers = offers;
@@ -29,7 +30,12 @@ export default class EventView {
     `).join('');
   }
 
-  getTemplate() {
+  setRollupClickHandler(callback) {
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', callback);
+  }
+
+  get template() {
     return `
       <li class="trip-events__item">
         <div class="event">
@@ -72,6 +78,9 @@ export default class EventView {
 
           <button class="event__favorite-btn ${this.point.isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
             <span class="visually-hidden">Add to favorite</span>
+            <svg class="event__favorite-icon" width="28" height="28">
+              <use xlink:href="img/sprite.svg#favorite"></use>
+            </svg>
           </button>
 
           <button class="event__rollup-btn" type="button">
@@ -81,12 +90,5 @@ export default class EventView {
         </div>
       </li>
     `;
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
   }
 }
