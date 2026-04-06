@@ -1,9 +1,10 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {formatDateTime} from '../utils/format.js';
 
-export default class EditEventView {
+export default class EditEventView extends AbstractView {
 
   constructor(point, destination, offers) {
+    super();
     this.point = point;
     this.destination = destination;
     this.offers = offers;
@@ -35,7 +36,17 @@ export default class EditEventView {
     }).join('');
   }
 
-  getTemplate() {
+  setFormSubmitHandler(callback) {
+    this.element.querySelector('form')
+      .addEventListener('submit', callback);
+  }
+
+  setRollupClickHandler(callback) {
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', callback);
+  }
+
+  get template() {
     return `
       <li class="trip-events__item">
         <form class="event event--edit" action="#" method="post">
@@ -119,12 +130,5 @@ export default class EditEventView {
         </form>
       </li>
     `;
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
   }
 }

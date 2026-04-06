@@ -11,6 +11,7 @@ export default class MainPresenter {
 
   constructor() {
     this.pointsModel = new PointsModel();
+    this.activeEditComponent = null;
   }
 
   init() {
@@ -23,20 +24,62 @@ export default class MainPresenter {
     const offers = this.pointsModel.getOffers();
 
     render(new FilterView(), filterContainer);
-    render(
-      new SortView(),
-      eventsContainer,
-      RenderPosition.AFTERBEGIN
-    );
-
-    const firstPoint = points[0];
-    const firstDestination = destinations.find((d) => d.id === firstPoint.destination);
-
-    render(new EditEventView(firstPoint, firstDestination, offers), eventsListContainer);
+    render(new SortView(), eventsContainer, RenderPosition.AFTERBEGIN);
 
     points.forEach((point) => {
       const destination = destinations.find((d) => d.id === point.destination);
-      render(new EventView(point, destination, offers), eventsListContainer);
+
+      const eventComponent = new EventView(point, destination, offers);
+      const editComponent = new EditEventView(point, destination, offers);
+
+      let escKeyDownHandler;
+
+      const replaceEditToEvent = () => {
+        editComponent.element.replaceWith(eventComponent.element);
+        document.removeEventListener('keydown', escKeyDownHandler);
+
+        if (this.activeEditComponent === editComponent) {
+          this.activeEditComponent = null;
+        }
+      };
+
+      const replaceEventToEdit = () => {
+
+        if (this.activeEditComponent && this.activeEditComponent !== editComponent) {
+          this.activeEditComponent.element.replaceWith(
+            this.activeEditComponent._eventComponent.element
+          );
+        }
+
+        eventComponent.element.replaceWith(editComponent.element);
+        this.activeEditComponent = editComponent;
+
+        editComponent._eventComponent = eventComponent;
+
+        escKeyDownHandler = (evt) => {
+          if (evt.key === 'Escape') {
+            evt.preventDefault();
+            replaceEditToEvent();
+          }
+        };
+
+        document.addEventListener('keydown', escKeyDownHandler);
+      };
+
+      eventComponent.setRollupClickHandler(() => {
+        replaceEventToEdit();
+      });
+
+      editComponent.setFormSubmitHandler((evt) => {
+        evt.preventDefault();
+        replaceEditToEvent();
+      });
+
+      editComponent.setRollupClickHandler(() => {
+        replaceEditToEvent();
+      });
+
+      render(eventComponent, eventsListContainer);
     });
   }
 }
