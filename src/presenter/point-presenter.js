@@ -1,4 +1,4 @@
-import {render, replace} from '../framework/render.js';
+import {render, replace, remove} from '../framework/render.js';
 
 import EventView from '../view/event-view.js';
 import EditEventView from '../view/edit-event-view.js';
@@ -93,5 +93,9 @@ export default class PointPresenter {
       document.removeEventListener('keydown', this.escKeyDownHandler);
     }
   };
-}
 
+  destroy() {
+    remove(this.eventComponent);
+    remove(this.editComponent);
+  }
+}
