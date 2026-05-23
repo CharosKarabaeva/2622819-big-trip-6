@@ -13,16 +13,18 @@ export default class MainPresenter {
     this.pointsModel = new PointsModel();
 
     this.pointPresenters = new Map();
+
+    this.currentSortType = 'day';
   }
 
   init() {
-    const filterContainer = document.querySelector('.trip-controls__filters');
-    const eventsContainer = document.querySelector('.trip-events');
-    const eventsListContainer = document.querySelector('.trip-events__list');
+    this.filterContainer = document.querySelector('.trip-controls__filters');
+    this.eventsContainer = document.querySelector('.trip-events');
+    this.eventsListContainer = document.querySelector('.trip-events__list');
 
-    const points = this.pointsModel.getPoints();
-    const destinations = this.pointsModel.getDestinations();
-    const offers = this.pointsModel.getOffers();
+    this.points = this.pointsModel.getPoints();
+    this.destinations = this.pointsModel.getDestinations();
+    this.offers = this.pointsModel.getOffers();
 
     const now = new Date();
 
@@ -31,35 +33,45 @@ export default class MainPresenter {
         isChecked: true
       },
       future: {
-        isDisabled: !points.some((p) => new Date(p.dateFrom) > now)
+        isDisabled: !this.points.some((p) => new Date(p.dateFrom) > now)
       },
       present: {
-        isDisabled: !points.some((p) =>
+        isDisabled: !this.points.some((p) =>
           new Date(p.dateFrom) <= now &&
           new Date(p.dateTo) >= now
         )
       },
       past: {
-        isDisabled: !points.some((p) => new Date(p.dateTo) < now)
+        isDisabled: !this.points.some((p) => new Date(p.dateTo) < now)
       }
     };
 
-    render(new FilterView(filters), filterContainer);
-    render(new SortView(), eventsContainer, RenderPosition.AFTERBEGIN);
+    render(new FilterView(filters), this.filterContainer);
 
-    if (points.length === 0) {
-      render(new NoPointsView(), eventsContainer);
+    render(
+      new SortView(this.handleSortTypeChange),
+      this.eventsContainer,
+      RenderPosition.AFTERBEGIN
+    );
+
+    if (this.points.length === 0) {
+      render(new NoPointsView(), this.eventsContainer);
       return;
     }
 
+    this.renderPoints(this.points);
+  }
+
+  renderPoints(points) {
+
     points.forEach((point) => {
-      const destination = destinations.find((d) => d.id === point.destination);
+      const destination = this.destinations.find((d) => d.id === point.destination);
 
       const pointPresenter = new PointPresenter(
-        eventsListContainer,
+        this.eventsListContainer,
         point,
         destination,
-        offers,
+        this.offers,
         this.handleModeChange
       );
 
@@ -71,5 +83,46 @@ export default class MainPresenter {
 
   handleModeChange = () => {
     this.pointPresenters.forEach((presenter) => presenter.resetView());
+  };
+
+  clearPointList() {
+    this.pointPresenters.forEach((presenter) => presenter.destroy());
+
+    this.pointPresenters.clear();
+  }
+
+  handleSortTypeChange = (sortType) => {
+
+    if (this.currentSortType === sortType) {
+      return;
+    }
+
+    this.currentSortType = sortType;
+
+    this.clearPointList();
+
+    const sortedPoints = [...this.points];
+
+    switch (sortType) {
+      case 'time':
+        sortedPoints.sort((a, b) => {
+          const durationA = new Date(a.dateTo) - new Date(a.dateFrom);
+          const durationB = new Date(b.dateTo) - new Date(b.dateFrom);
+
+          return durationB - durationA;
+        });
+        break;
+
+      case 'price':
+        sortedPoints.sort((a, b) => b.basePrice - a.basePrice);
+        break;
+
+      default:
+        sortedPoints.sort((a, b) =>
+          new Date(a.dateFrom) - new Date(b.dateFrom)
+        );
+    }
+
+    this.renderPoints(sortedPoints);
   };
 }
