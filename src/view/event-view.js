@@ -35,6 +35,11 @@ export default class EventView extends AbstractView {
       .addEventListener('click', callback);
   }
 
+  setFavoriteClickHandler(callback) {
+    this.element.querySelector('.event__favorite-btn')
+      .addEventListener('click', callback);
+  }
+
   get template() {
     return `
       <li class="trip-events__item">

@@ -2,17 +2,17 @@ import {render, RenderPosition} from '../render.js';
 
 import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
-import EventView from '../view/event-view.js';
-import EditEventView from '../view/edit-event-view.js';
 import NoPointsView from '../view/no-points-view.js';
 
 import PointsModel from '../model/points-model.js';
+import PointPresenter from './point-presenter.js';
 
 export default class MainPresenter {
 
   constructor() {
     this.pointsModel = new PointsModel();
-    this.activeEditComponent = null;
+
+    this.pointPresenters = new Map();
   }
 
   init() {
@@ -55,57 +55,21 @@ export default class MainPresenter {
     points.forEach((point) => {
       const destination = destinations.find((d) => d.id === point.destination);
 
-      const eventComponent = new EventView(point, destination, offers);
-      const editComponent = new EditEventView(point, destination, offers);
+      const pointPresenter = new PointPresenter(
+        eventsListContainer,
+        point,
+        destination,
+        offers,
+        this.handleModeChange
+      );
 
-      let escKeyDownHandler;
+      pointPresenter.init();
 
-      const replaceEditToEvent = () => {
-        editComponent.element.replaceWith(eventComponent.element);
-        document.removeEventListener('keydown', escKeyDownHandler);
-
-        if (this.activeEditComponent === editComponent) {
-          this.activeEditComponent = null;
-        }
-      };
-
-      const replaceEventToEdit = () => {
-
-        if (this.activeEditComponent && this.activeEditComponent !== editComponent) {
-          this.activeEditComponent.element.replaceWith(
-            this.activeEditComponent._eventComponent.element
-          );
-        }
-
-        eventComponent.element.replaceWith(editComponent.element);
-        this.activeEditComponent = editComponent;
-
-        editComponent._eventComponent = eventComponent;
-
-        escKeyDownHandler = (evt) => {
-          if (evt.key === 'Escape') {
-            evt.preventDefault();
-            replaceEditToEvent();
-          }
-        };
-
-        document.addEventListener('keydown', escKeyDownHandler);
-      };
-
-      eventComponent.setRollupClickHandler(() => {
-        replaceEventToEdit();
-      });
-
-      editComponent.setFormSubmitHandler((evt) => {
-        evt.preventDefault();
-        replaceEditToEvent();
-      });
-
-      editComponent.setRollupClickHandler(() => {
-        replaceEditToEvent();
-      });
-
-      render(eventComponent, eventsListContainer);
+      this.pointPresenters.set(point.id, pointPresenter);
     });
   }
+
+  handleModeChange = () => {
+    this.pointPresenters.forEach((presenter) => presenter.resetView());
+  };
 }
