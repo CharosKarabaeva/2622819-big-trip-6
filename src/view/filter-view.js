@@ -2,10 +2,24 @@ import AbstractView from '../framework/view/abstract-view.js';
 
 export default class FilterView extends AbstractView {
 
-  constructor(filters) {
+  constructor(onFilterTypeChange) {
     super();
-    this.filters = filters;
+
+    this._callback = {
+      onFilterTypeChange
+    };
+
+    this.element.addEventListener(
+      'change',
+      this.filterTypeChangeHandler
+    );
   }
+
+  filterTypeChangeHandler = (evt) => {
+    evt.preventDefault();
+
+    this._callback.onFilterTypeChange(evt.target.value);
+  };
 
   get template() {
     return `

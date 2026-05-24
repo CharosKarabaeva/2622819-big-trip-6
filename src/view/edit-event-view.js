@@ -76,19 +76,34 @@ export default class EditEventView extends AbstractStatefulView {
       .addEventListener('click', this._callback.rollupClick);
   }
 
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+
+    this.element.querySelector('.event__reset-btn')
+      .addEventListener('click', this._callback.deleteClick);
+  }
+
   setDestinationChangeHandler() {
     this.element.querySelector('.event__input--destination')
       .addEventListener('change', this.destinationChangeHandler);
   }
 
-  typeChangeHandler = (evt) => {
-    evt.preventDefault();
+  setTypeChangeHandler() {
+    this.element.querySelector('.event__type-select')
+      .addEventListener('change', this.typeChangeHandler);
+  }
 
-    this._state.point.type = evt.target.value;
-    this._state.point.offers = [];
+  setPriceInputHandler() {
 
-    this.updateElement(this._state);
-  };
+    this.element
+      .querySelector('.event__input--price')
+      .addEventListener('input', (evt) => {
+
+        evt.target.value = evt.target.value.replace(/\D/g, '');
+
+        this._state.point.basePrice = Number(evt.target.value);
+      });
+  }
 
   setDatepicker() {
 
@@ -115,6 +130,15 @@ export default class EditEventView extends AbstractStatefulView {
     );
   }
 
+  typeChangeHandler = (evt) => {
+    evt.preventDefault();
+
+    this._state.point.type = evt.target.value;
+    this._state.point.offers = [];
+
+    this.updateElement(this._state);
+  };
+
   destinationChangeHandler = (evt) => {
     evt.preventDefault();
 
@@ -134,6 +158,8 @@ export default class EditEventView extends AbstractStatefulView {
     }
 
     this._state.destination = foundDestination;
+
+    this._state.point.destination = foundDestination.id;
 
     this.updateElement(this._state);
   };
@@ -174,31 +200,51 @@ export default class EditEventView extends AbstractStatefulView {
                 ${this._state.point.type}
               </label>
 
-              <input class="event__input event__input--destination"
+              <input
+                class="event__input event__input--destination"
                 type="text"
-                value="${this._state.destination.name}">
+                list="destination-list"
+                value="${this._state.destination.name}"
+              >
+
+              <datalist id="destination-list">
+                ${this._allDestinations.map((destination) => `
+                  <option value="${destination.name}"></option>
+                `).join('')}
+              </datalist>
             </div>
 
             <div class="event__field-group event__field-group--time">
-              <input class="event__input event__input--time-start"
+
+              <input
+                class="event__input event__input--time-start"
                 type="text"
-                value="${formatDateTime(this._state.point.dateFrom)}">
+                value="${formatDateTime(this._state.point.dateFrom)}"
+              >
 
               &mdash;
 
-              <input class="event__input event__input--time-end"
+              <input
+                class="event__input event__input--time-end"
                 type="text"
-                value="${formatDateTime(this._state.point.dateTo)}">
+                value="${formatDateTime(this._state.point.dateTo)}"
+              >
+
             </div>
 
             <div class="event__field-group event__field-group--price">
+
               <label class="event__label">
                 &euro;
               </label>
 
-              <input class="event__input event__input--price"
+              <input
+                class="event__input event__input--price"
                 type="text"
-                value="${this._state.point.basePrice}">
+                maxlength="9"
+                value="${this._state.point.basePrice}"
+              >
+
             </div>
 
             <button class="event__save-btn btn btn--blue" type="submit">
@@ -235,6 +281,7 @@ export default class EditEventView extends AbstractStatefulView {
               <p class="event__destination-description">
                 ${this._state.destination.description}
               </p>
+
               <div class="event__photos-container">
                 <div class="event__photos-tape">
                   ${this.getPicturesTemplate()}
@@ -253,7 +300,9 @@ export default class EditEventView extends AbstractStatefulView {
   _restoreHandlers() {
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setRollupClickHandler(this._callback.rollupClick);
+    this.setDeleteClickHandler(this._callback.deleteClick);
     this.setDestinationChangeHandler();
     this.setTypeChangeHandler();
+    this.setPriceInputHandler();
   }
 }
