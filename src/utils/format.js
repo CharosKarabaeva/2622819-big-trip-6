@@ -1,53 +1,43 @@
-const formatDate = (date) => {
-  const d = new Date(date);
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: '2-digit'
-  }).toUpperCase();
-};
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 
-const formatTime = (date) => {
-  const d = new Date(date);
-  return d.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
+dayjs.extend(duration);
+
+const formatDate = (date) => (
+  dayjs(date).format('MMM DD').toUpperCase()
+);
+
+const formatTime = (date) => (
+  dayjs(date).format('HH:mm')
+);
 
 const formatDuration = (dateFrom, dateTo) => {
-  const diff = new Date(dateTo) - new Date(dateFrom);
+  const diff = dayjs(dateTo).diff(dayjs(dateFrom));
 
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
+  const durationTime = dayjs.duration(diff);
 
-  const m = minutes % 60;
-  const h = hours % 24;
+  const days = durationTime.days();
+  const hours = durationTime.hours();
+  const minutes = durationTime.minutes();
 
   if (days > 0) {
-    return `${days}D ${h}H ${m}M`;
+    return `${days}D ${hours}H ${minutes}M`;
   }
 
   if (hours > 0) {
-    return `${hours}H ${m}M`;
+    return `${hours}H ${minutes}M`;
   }
 
   return `${minutes}M`;
 };
 
-export {formatDate, formatTime, formatDuration};
+const formatDateTime = (date) => (
+  dayjs(date).format('DD/MM/YY HH:mm')
+);
 
-function formatDateTime(date) {
-  const d = new Date(date);
-
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = String(d.getFullYear()).slice(-2);
-
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
-
-export {formatDateTime};
+export {
+  formatDate,
+  formatTime,
+  formatDuration,
+  formatDateTime
+};
