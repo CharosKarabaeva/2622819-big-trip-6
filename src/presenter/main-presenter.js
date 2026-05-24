@@ -1,20 +1,23 @@
 import {render, RenderPosition} from '../render.js';
+import {UserAction} from '../const.js';
 
-import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
 import NoPointsView from '../view/no-points-view.js';
 
-import PointsModel from '../model/points-model.js';
 import PointPresenter from './point-presenter.js';
 
 export default class MainPresenter {
 
-  constructor() {
-    this.pointsModel = new PointsModel();
+  constructor(pointsModel, filterModel) {
+
+    this.pointsModel = pointsModel;
+    this.filterModel = filterModel;
 
     this.pointPresenters = new Map();
 
     this.currentSortType = 'day';
+
+    this.handleViewAction = this.handleViewAction.bind(this);
   }
 
   init() {
@@ -26,40 +29,51 @@ export default class MainPresenter {
     this.destinations = this.pointsModel.getDestinations();
     this.offers = this.pointsModel.getOffers();
 
-    const now = new Date();
-
-    const filters = {
-      everything: {
-        isChecked: true
-      },
-      future: {
-        isDisabled: !this.points.some((p) => new Date(p.dateFrom) > now)
-      },
-      present: {
-        isDisabled: !this.points.some((p) =>
-          new Date(p.dateFrom) <= now &&
-          new Date(p.dateTo) >= now
-        )
-      },
-      past: {
-        isDisabled: !this.points.some((p) => new Date(p.dateTo) < now)
-      }
-    };
-
-    render(new FilterView(filters), this.filterContainer);
-
     render(
       new SortView(this.handleSortTypeChange),
       this.eventsContainer,
       RenderPosition.AFTERBEGIN
     );
 
-    if (this.points.length === 0) {
-      render(new NoPointsView(), this.eventsContainer);
+    if (this.filteredPoints.length === 0) {
+
+      render(
+        new NoPointsView(this.filterModel.getFilter()),
+        this.eventsContainer
+      );
+
       return;
     }
 
-    this.renderPoints(this.points);
+    this.renderPoints(this.filteredPoints);
+  }
+
+  get filteredPoints() {
+
+    const filterType = this.filterModel.getFilter();
+
+    switch (filterType) {
+
+      case 'future':
+        return this.points.filter(
+          (point) => new Date(point.dateFrom) > new Date()
+        );
+
+      case 'present':
+        return this.points.filter(
+          (point) =>
+            new Date(point.dateFrom) <= new Date()
+            && new Date(point.dateTo) >= new Date()
+        );
+
+      case 'past':
+        return this.points.filter(
+          (point) => new Date(point.dateTo) < new Date()
+        );
+
+      default:
+        return this.points;
+    }
   }
 
   renderPoints(points) {
@@ -73,7 +87,8 @@ export default class MainPresenter {
         destination,
         this.offers,
         this.destinations,
-        this.handleModeChange
+        this.handleModeChange,
+        this.handleViewAction
       );
 
       pointPresenter.init();
@@ -126,4 +141,24 @@ export default class MainPresenter {
 
     this.renderPoints(sortedPoints);
   };
+
+  handleViewAction(actionType, update) {
+
+    switch (actionType) {
+
+      case UserAction.UPDATE_POINT:
+        this.pointsModel.updatePoint(update);
+        break;
+
+      case UserAction.DELETE_POINT:
+        this.pointsModel.deletePoint(update);
+        break;
+    }
+
+    this.points = this.pointsModel.getPoints();
+
+    this.clearPointList();
+
+    this.renderPoints(this.points);
+  }
 }

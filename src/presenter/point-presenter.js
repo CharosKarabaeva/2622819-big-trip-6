@@ -1,17 +1,19 @@
 import {render, replace, remove} from '../framework/render.js';
+import {UserAction} from '../const.js';
 
 import EventView from '../view/event-view.js';
 import EditEventView from '../view/edit-event-view.js';
 
 export default class PointPresenter {
 
-  constructor(container, point, destination, offers, destinations, onModeChange) {
+  constructor(container, point, destination, offers, destinations, onModeChange, onDataChange) {
     this.container = container;
     this.point = point;
     this.destination = destination;
     this.offers = offers;
     this.destinations = destinations;
     this.onModeChange = onModeChange;
+    this.onDataChange = onDataChange;
 
     this.eventComponent = null;
     this.editComponent = null;
@@ -45,10 +47,17 @@ export default class PointPresenter {
 
       document.addEventListener('keydown', this.escKeyDownHandler);
     });
-
     this.eventComponent.setFavoriteClickHandler(() => {
-      this.point.isFavorite = !this.point.isFavorite;
-      this.init();
+
+      const updatedPoint = {
+        ...this.point,
+        isFavorite: !this.point.isFavorite
+      };
+
+      this.onDataChange(
+        UserAction.UPDATE_POINT,
+        updatedPoint
+      );
     });
 
     this.editComponent.setFormSubmitHandler((evt) => {
@@ -58,6 +67,15 @@ export default class PointPresenter {
 
     this.editComponent.setRollupClickHandler(() => {
       this.replaceEditToEvent();
+    });
+
+    this.editComponent.setDeleteClickHandler((evt) => {
+      evt.preventDefault();
+
+      this.onDataChange(
+        UserAction.DELETE_POINT,
+        this.point
+      );
     });
 
     if (prevEventComponent === null || prevEditComponent === null) {
