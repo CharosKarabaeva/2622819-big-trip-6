@@ -72,6 +72,7 @@ export default class MainPresenter {
         point,
         destination,
         this.offers,
+        this.destinations,
         this.handleModeChange
       );
 

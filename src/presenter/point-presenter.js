@@ -5,11 +5,12 @@ import EditEventView from '../view/edit-event-view.js';
 
 export default class PointPresenter {
 
-  constructor(container, point, destination, offers, onModeChange) {
+  constructor(container, point, destination, offers, destinations, onModeChange) {
     this.container = container;
     this.point = point;
     this.destination = destination;
     this.offers = offers;
+    this.destinations = destinations;
     this.onModeChange = onModeChange;
 
     this.eventComponent = null;
@@ -30,7 +31,8 @@ export default class PointPresenter {
     this.editComponent = new EditEventView(
       this.point,
       this.destination,
-      this.offers
+      this.offers,
+      this.destinations
     );
 
     this.eventComponent.setRollupClickHandler(() => {
