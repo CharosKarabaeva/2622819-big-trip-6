@@ -41,6 +41,8 @@ export default class PointPresenter {
 
       this.replaceEventToEdit();
 
+      this.editComponent.setDatepicker();
+
       document.addEventListener('keydown', this.escKeyDownHandler);
     });
 

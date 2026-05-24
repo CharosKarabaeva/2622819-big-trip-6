@@ -1,3 +1,5 @@
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {formatDateTime} from '../utils/format.js';
 
@@ -88,6 +90,31 @@ export default class EditEventView extends AbstractStatefulView {
     this.updateElement(this._state);
   };
 
+  setDatepicker() {
+
+    flatpickr(
+      this.element.querySelector('.event__input--time-start'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        'time_24hr': true,
+        clickOpens: true,
+        allowInput: true
+      }
+    );
+
+    flatpickr(
+      this.element.querySelector('.event__input--time-end'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        'time_24hr': true,
+        clickOpens: true,
+        allowInput: true
+      }
+    );
+  }
+
   destinationChangeHandler = (evt) => {
     evt.preventDefault();
 
@@ -153,13 +180,13 @@ export default class EditEventView extends AbstractStatefulView {
             </div>
 
             <div class="event__field-group event__field-group--time">
-              <input class="event__input event__input--time"
+              <input class="event__input event__input--time-start"
                 type="text"
                 value="${formatDateTime(this._state.point.dateFrom)}">
 
               &mdash;
 
-              <input class="event__input event__input--time"
+              <input class="event__input event__input--time-end"
                 type="text"
                 value="${formatDateTime(this._state.point.dateTo)}">
             </div>
