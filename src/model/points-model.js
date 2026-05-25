@@ -1,27 +1,54 @@
-import points from '../mock/points.js';
-import destinations from '../mock/destinations.js';
-import offers from '../mock/offers.js';
+import PointAdapter from '../adapter/point-adapter.js';
 
 export default class PointsModel {
 
-  points = points;
+  constructor(api) {
+
+    this.api = api;
+
+    this.points = [];
+
+    this.destinations = [];
+
+    this.offers = [];
+  }
+
+  async init() {
+
+    const points = await this.api.points();
+
+    this.points = points.map(PointAdapter.adaptToClient);
+
+    this.destinations = await this.api.destinations();
+
+    this.offers = await this.api.offers();
+  }
 
   getPoints() {
     return this.points;
   }
 
   getDestinations() {
-    return destinations;
+    return this.destinations;
   }
 
   getOffers() {
-    return offers;
+    return this.offers;
   }
 
-  updatePoint(updatedPoint) {
+  async updatePoint(updatedPoint) {
+
+    const updatedPointResponse = await this.api.updatePoint(
+      PointAdapter.adaptToServer(updatedPoint)
+    );
+
+    const adaptedPoint = PointAdapter.adaptToClient(
+      updatedPointResponse
+    );
+
     this.points = this.points.map((point) =>
-      point.id === updatedPoint.id
-        ? updatedPoint
+      point.id === adaptedPoint.id
+        ? adaptedPoint
         : point
     );
   }
