@@ -22,6 +22,8 @@ export default class EditEventView extends AbstractStatefulView {
     this.setRollupClickHandler = this.setRollupClickHandler.bind(this);
 
     this.setDestinationChangeHandler();
+    this.setTypeChangeHandler();
+    this.setOffersChangeHandler();
   }
 
   getOffersTemplate() {
@@ -34,7 +36,7 @@ export default class EditEventView extends AbstractStatefulView {
     }
 
     return offersByType.offers.map((offer) => {
-      const isChecked = this._state.point.offers.includes(offer.id);
+      const isChecked = this._state.point.offers.includes(String(offer.id));
 
       return `
         <div class="event__offer-selector">
@@ -93,6 +95,16 @@ export default class EditEventView extends AbstractStatefulView {
       .addEventListener('change', this.typeChangeHandler);
   }
 
+  setOffersChangeHandler() {
+
+    this.element
+      .querySelectorAll('.event__offer-checkbox')
+      .forEach((checkbox) => {
+
+        checkbox.addEventListener('change', this.offerChangeHandler);
+      });
+  }
+
   setPriceInputHandler() {
 
     this.element
@@ -114,7 +126,11 @@ export default class EditEventView extends AbstractStatefulView {
         enableTime: true,
         'time_24hr': true,
         clickOpens: true,
-        allowInput: true
+        allowInput: true,
+
+        onChange: ([userDate]) => {
+          this._state.point.dateFrom = userDate.toISOString();
+        }
       }
     );
 
@@ -125,7 +141,11 @@ export default class EditEventView extends AbstractStatefulView {
         enableTime: true,
         'time_24hr': true,
         clickOpens: true,
-        allowInput: true
+        allowInput: true,
+
+        onChange: ([userDate]) => {
+          this._state.point.dateTo = userDate.toISOString();
+        }
       }
     );
   }
@@ -135,23 +155,13 @@ export default class EditEventView extends AbstractStatefulView {
 
     this._state.point.type = evt.target.value;
     this._state.point.offers = [];
-
-    this.updateElement(this._state);
   };
 
   destinationChangeHandler = (evt) => {
     evt.preventDefault();
 
-    const selectedDestination = this._state.offers
-      && this._state.destination
-      && evt.target.value;
-
-    if (!selectedDestination) {
-      return;
-    }
-
     const foundDestination = this._allDestinations
-      ?.find((item) => item.name === evt.target.value);
+      .find((item) => item.name === evt.target.value);
 
     if (!foundDestination) {
       return;
@@ -160,8 +170,23 @@ export default class EditEventView extends AbstractStatefulView {
     this._state.destination = foundDestination;
 
     this._state.point.destination = foundDestination.id;
+  };
 
-    this.updateElement(this._state);
+  offerChangeHandler = (evt) => {
+
+    const offerId = evt.target.id.replace('offer-', '');
+
+    if (evt.target.checked) {
+
+      this._state.point.offers.push(String(offerId));
+
+    } else {
+
+      this._state.point.offers =
+        this._state.point.offers.filter(
+          (id) => id !== offerId
+        );
+    }
   };
 
   get template() {
@@ -303,6 +328,8 @@ export default class EditEventView extends AbstractStatefulView {
     this.setDeleteClickHandler(this._callback.deleteClick);
     this.setDestinationChangeHandler();
     this.setTypeChangeHandler();
+    this.setOffersChangeHandler();
     this.setPriceInputHandler();
+    this.setDatepicker();
   }
 }

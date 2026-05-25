@@ -3,9 +3,18 @@ import PointsModel from './model/points-model.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import FilterModel from './model/filter-model.js';
 import NewPointPresenter from './presenter/new-point-presenter.js';
+import BigTripApi from './api/big-trip-api.js';
+import LoadingView from './view/loading-view.js';
+import {render} from './framework/render.js';
 
-const pointsModel = new PointsModel();
 const filterModel = new FilterModel();
+
+const api = new BigTripApi(
+  'https://24.objects.htmlacademy.pro/big-trip',
+  'Basic qwerty123456'
+);
+
+const pointsModel = new PointsModel(api);
 
 const mainPresenter = new MainPresenter(
   pointsModel,
@@ -59,8 +68,21 @@ const filterPresenter = new FilterPresenter(
   }
 );
 
-mainPresenter.init();
-filterPresenter.init();
+render(
+  new LoadingView(),
+  document.querySelector('.trip-events')
+);
+
+pointsModel.init().then(() => {
+
+  document
+    .querySelector('.trip-events__msg')
+    ?.remove();
+
+  filterPresenter.init();
+
+  mainPresenter.init();
+});
 
 document
   .querySelector('.trip-main__event-add-btn')

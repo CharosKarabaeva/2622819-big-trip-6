@@ -45,6 +45,8 @@ export default class PointPresenter {
 
       this.editComponent.setDatepicker();
 
+      this.editComponent.setPriceInputHandler();
+
       document.addEventListener('keydown', this.escKeyDownHandler);
     });
     this.eventComponent.setFavoriteClickHandler(() => {
@@ -62,6 +64,12 @@ export default class PointPresenter {
 
     this.editComponent.setFormSubmitHandler((evt) => {
       evt.preventDefault();
+
+      this.onDataChange(
+        UserAction.UPDATE_POINT,
+        this.editComponent._state.point
+      );
+
       this.replaceEditToEvent();
     });
 

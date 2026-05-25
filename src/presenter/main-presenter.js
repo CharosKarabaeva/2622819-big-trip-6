@@ -147,7 +147,17 @@ export default class MainPresenter {
     switch (actionType) {
 
       case UserAction.UPDATE_POINT:
-        this.pointsModel.updatePoint(update);
+
+        this.pointsModel.updatePoint(update)
+          .then(() => {
+
+            this.points = this.pointsModel.getPoints();
+
+            this.clearPointList();
+
+            this.renderPoints(this.filteredPoints);
+          });
+
         break;
 
       case UserAction.DELETE_POINT:
