@@ -15,7 +15,11 @@ export default class EditEventView extends AbstractStatefulView {
     this._state = {
       point,
       destination,
-      offers
+      offers,
+
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false
     };
 
     this.setFormSubmitHandler = this.setFormSubmitHandler.bind(this);
@@ -36,7 +40,7 @@ export default class EditEventView extends AbstractStatefulView {
     }
 
     return offersByType.offers.map((offer) => {
-      const isChecked = this._state.point.offers.includes(String(offer.id));
+      const isChecked = this._state.point.offers.includes(offer.id);
 
       return `
         <div class="event__offer-selector">
@@ -153,8 +157,13 @@ export default class EditEventView extends AbstractStatefulView {
   typeChangeHandler = (evt) => {
     evt.preventDefault();
 
-    this._state.point.type = evt.target.value;
-    this._state.point.offers = [];
+    this.updateElement({
+      point: {
+        ...this._state.point,
+        type: evt.target.value,
+        offers: []
+      }
+    });
   };
 
   destinationChangeHandler = (evt) => {
@@ -167,18 +176,23 @@ export default class EditEventView extends AbstractStatefulView {
       return;
     }
 
-    this._state.destination = foundDestination;
-
-    this._state.point.destination = foundDestination.id;
+    this.updateElement({
+      destination: foundDestination,
+      point: {
+        ...this._state.point,
+        destination: foundDestination.id
+      }
+    });
   };
 
   offerChangeHandler = (evt) => {
 
-    const offerId = evt.target.id.replace('offer-', '');
+    const offerId =
+      evt.target.id.replace('offer-', '');
 
     if (evt.target.checked) {
 
-      this._state.point.offers.push(String(offerId));
+      this._state.point.offers.push(offerId);
 
     } else {
 
@@ -272,12 +286,20 @@ export default class EditEventView extends AbstractStatefulView {
 
             </div>
 
-            <button class="event__save-btn btn btn--blue" type="submit">
-              Save
+            <button
+              class="event__save-btn btn btn--blue"
+              type="submit"
+              ${this._state.isDisabled ? 'disabled' : ''}
+            >
+              ${this._state.isSaving ? 'Saving...' : 'Save'}
             </button>
 
-            <button class="event__reset-btn" type="reset">
-              Delete
+            <button
+              class="event__reset-btn"
+              type="reset"
+              ${this._state.isDisabled ? 'disabled' : ''}
+            >
+              ${this._state.isDeleting ? 'Deleting...' : 'Delete'}
             </button>
 
             <button class="event__rollup-btn" type="button">

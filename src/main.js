@@ -24,8 +24,6 @@ const mainPresenter = new MainPresenter(
 const newPointPresenter = new NewPointPresenter(
   document.querySelector('.trip-events__list'),
   pointsModel,
-  pointsModel.getDestinations(),
-  pointsModel.getOffers(),
   mainPresenter
 );
 

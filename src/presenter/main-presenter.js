@@ -156,19 +156,35 @@ export default class MainPresenter {
             this.clearPointList();
 
             this.renderPoints(this.filteredPoints);
+          })
+          .catch(() => {
+
+            this.pointPresenters
+              .get(update.id)
+              ?.setAborting();
           });
 
         break;
 
       case UserAction.DELETE_POINT:
-        this.pointsModel.deletePoint(update);
+
+        this.pointsModel.deletePoint(update)
+          .then(() => {
+
+            this.points = this.pointsModel.getPoints();
+
+            this.clearPointList();
+
+            this.renderPoints(this.filteredPoints);
+          })
+          .catch(() => {
+
+            this.pointPresenters
+              .get(update.id)
+              ?.setAborting();
+          });
+
         break;
     }
-
-    this.points = this.pointsModel.getPoints();
-
-    this.clearPointList();
-
-    this.renderPoints(this.points);
   }
 }

@@ -7,17 +7,12 @@ export default class NewPointPresenter {
   constructor(
     container,
     pointsModel,
-    destinations,
-    offers,
     mainPresenter
   ) {
 
     this.container = container;
 
     this.pointsModel = pointsModel;
-
-    this.destinations = destinations;
-    this.offers = offers;
 
     this.mainPresenter = mainPresenter;
 
@@ -30,11 +25,25 @@ export default class NewPointPresenter {
       return;
     }
 
+    this.destinations =
+      this.pointsModel.getDestinations();
+
+    this.offers =
+      this.pointsModel.getOffers();
+
+    const defaultDestination = this.destinations.length
+      ? this.destinations[0]
+      : {
+        id: '',
+        name: '',
+        description: '',
+        pictures: []
+      };
+
     const emptyPoint = {
       point: {
-        id: String(Date.now()),
         type: 'taxi',
-        destination: '1',
+        destination: defaultDestination.id,
         dateFrom: new Date().toISOString(),
         dateTo: new Date().toISOString(),
         basePrice: 0,
@@ -42,7 +51,8 @@ export default class NewPointPresenter {
         offers: []
       },
 
-      destination: this.destinations[0],
+      destination: defaultDestination,
+
       offers: this.offers
     };
 
@@ -70,17 +80,37 @@ export default class NewPointPresenter {
     this.pointComponent.setFormSubmitHandler((evt) => {
       evt.preventDefault();
 
-      this.pointsModel.addPoint(emptyPoint.point);
+      this.pointComponent.updateElement({
+        isDisabled: true,
+        isSaving: true
+      });
 
-      this.mainPresenter.points = this.pointsModel.getPoints();
+      this.pointsModel.addPoint(
+        this.pointComponent._state.point
+      )
+        .then(() => {
 
-      this.mainPresenter.clearPointList();
+          this.mainPresenter.points =
+            this.pointsModel.getPoints();
 
-      this.mainPresenter.renderPoints(
-        this.mainPresenter.filteredPoints
-      );
+          this.mainPresenter.clearPointList();
 
-      this.destroy();
+          this.mainPresenter.renderPoints(
+            this.mainPresenter.filteredPoints
+          );
+
+          this.destroy();
+        })
+        .catch(() => {
+
+          this.pointComponent.shake(() => {
+
+            this.pointComponent.updateElement({
+              isDisabled: false,
+              isSaving: false
+            });
+          });
+        });
     });
   }
 

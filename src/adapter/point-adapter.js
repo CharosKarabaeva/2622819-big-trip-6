@@ -20,8 +20,9 @@ export default class PointAdapter {
 
   static adaptToServer(point) {
 
-    return {
-      id: point.id,
+    console.log('SERVER POINT', point);
+
+    const serverPoint = {
       type: point.type,
       destination: point.destination,
 
@@ -34,5 +35,12 @@ export default class PointAdapter {
 
       offers: point.offers
     };
+
+    console.log(
+      'SERVER PAYLOAD',
+      JSON.stringify(serverPoint, null, 2)
+    );
+
+    return serverPoint;
   }
 }
