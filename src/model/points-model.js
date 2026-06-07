@@ -1,8 +1,11 @@
 import PointAdapter from '../adapter/point-adapter.js';
+import Observable from '../framework/observable.js';
 
-export default class PointsModel {
+export default class PointsModel extends Observable {
 
   constructor(api) {
+
+    super();
 
     this.api = api;
 
@@ -51,18 +54,36 @@ export default class PointsModel {
         ? adaptedPoint
         : point
     );
+
+    this._notify('UPDATE');
   }
 
-  addPoint(newPoint) {
+  async addPoint(newPoint) {
+
+    const response = await this.api.addPoint(
+      PointAdapter.adaptToServer(newPoint)
+    );
+
+    const adaptedPoint = PointAdapter.adaptToClient(
+      response
+    );
+
     this.points = [
-      newPoint,
+      adaptedPoint,
       ...this.points
     ];
+
+    this._notify('ADD');
   }
 
-  deletePoint(pointToDelete) {
+  async deletePoint(pointToDelete) {
+
+    await this.api.deletePoint(pointToDelete);
+
     this.points = this.points.filter(
       (point) => point.id !== pointToDelete.id
     );
+
+    this._notify('DELETE');
   }
 }

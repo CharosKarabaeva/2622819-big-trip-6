@@ -77,4 +77,26 @@ export default class BigTripApi {
 
     return BigTripApi.parseResponse(response);
   }
+
+  async addPoint(point) {
+
+    const response = await this._load({
+      url: 'points',
+      method: 'POST',
+      body: JSON.stringify(point),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    });
+
+    return BigTripApi.parseResponse(response);
+  }
+
+  async deletePoint(point) {
+
+    await this._load({
+      url: `points/${point.id}`,
+      method: 'DELETE'
+    });
+  }
 }

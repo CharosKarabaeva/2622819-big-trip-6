@@ -65,12 +65,15 @@ export default class PointPresenter {
     this.editComponent.setFormSubmitHandler((evt) => {
       evt.preventDefault();
 
+      this.editComponent.updateElement({
+        isDisabled: true,
+        isSaving: true
+      });
+
       this.onDataChange(
         UserAction.UPDATE_POINT,
         this.editComponent._state.point
       );
-
-      this.replaceEditToEvent();
     });
 
     this.editComponent.setRollupClickHandler(() => {
@@ -79,6 +82,11 @@ export default class PointPresenter {
 
     this.editComponent.setDeleteClickHandler((evt) => {
       evt.preventDefault();
+
+      this.editComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true
+      });
 
       this.onDataChange(
         UserAction.DELETE_POINT,
@@ -123,6 +131,18 @@ export default class PointPresenter {
       document.removeEventListener('keydown', this.escKeyDownHandler);
     }
   };
+
+  setAborting() {
+
+    this.editComponent.shake(() => {
+
+      this.editComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    });
+  }
 
   destroy() {
     remove(this.eventComponent);
