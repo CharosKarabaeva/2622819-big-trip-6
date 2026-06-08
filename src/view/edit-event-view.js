@@ -3,6 +3,18 @@ import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {formatDateTime} from '../utils/format.js';
 
+const EVENT_TYPES = [
+  'taxi',
+  'bus',
+  'train',
+  'ship',
+  'drive',
+  'flight',
+  'check-in',
+  'sightseeing',
+  'restaurant'
+];
+
 export default class EditEventView extends AbstractStatefulView {
 
   constructor(point, destination, offers, destinations) {
@@ -68,6 +80,30 @@ export default class EditEventView extends AbstractStatefulView {
     `).join('');
   }
 
+  getEventTypesTemplate() {
+    return EVENT_TYPES.map((type) => `
+      <div class="event__type-item">
+
+        <input
+          id="event-type-${type}-1"
+          class="event__type-input visually-hidden"
+          type="radio"
+          name="event-type"
+          value="${type}"
+          ${this._state.point.type === type ? 'checked' : ''}
+        >
+
+        <label
+          class="event__type-label event__type-label--${type}"
+          for="event-type-${type}-1"
+        >
+          ${type.charAt(0).toUpperCase() + type.slice(1)}
+        </label>
+
+      </div>
+    `).join('');
+  }
+
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
 
@@ -95,8 +131,16 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   setTypeChangeHandler() {
-    this.element.querySelector('.event__type-select')
-      .addEventListener('change', this.typeChangeHandler);
+
+    this.element
+      .querySelectorAll('.event__type-input')
+      .forEach((input) => {
+
+        input.addEventListener(
+          'change',
+          this.typeChangeHandler
+        );
+      });
   }
 
   setOffersChangeHandler() {
@@ -212,7 +256,14 @@ export default class EditEventView extends AbstractStatefulView {
 
             <div class="event__type-wrapper">
 
-              <label class="event__type event__type-btn">
+              <label
+                class="event__type event__type-btn"
+                for="event-type-toggle-1"
+              >
+                <span class="visually-hidden">
+                  Choose event type
+                </span>
+
                 <img
                   class="event__type-icon"
                   width="17"
@@ -221,16 +272,25 @@ export default class EditEventView extends AbstractStatefulView {
                 >
               </label>
 
-              <select class="event__type-select">
+              <input
+                id="event-type-toggle-1"
+                class="event__type-toggle visually-hidden"
+                type="checkbox"
+              >
 
-                <option value="taxi">taxi</option>
-                <option value="flight">flight</option>
-                <option value="check-in">check-in</option>
-                <option value="bus">bus</option>
-                <option value="train">train</option>
-                <option value="ship">ship</option>
+              <div class="event__type-list">
 
-              </select>
+                <fieldset class="event__type-group">
+
+                  <legend class="visually-hidden">
+                    Event type
+                  </legend>
+
+                  ${this.getEventTypesTemplate()}
+
+                </fieldset>
+
+              </div>
 
             </div>
 
