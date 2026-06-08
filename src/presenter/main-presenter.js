@@ -199,7 +199,7 @@ export default class MainPresenter {
 
     this.clearPointList();
 
-    const sortedPoints = [...this.points];
+    const sortedPoints = [...this.filteredPoints];
 
     switch (sortType) {
       case 'time':
